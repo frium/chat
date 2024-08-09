@@ -49,25 +49,26 @@ public class TokenFilter extends OncePerRequestFilter {
             // 解析Token，获取其中的Claims对象
             Claims claims = JwtUtil.parseToken(secretKey, token);
             id = Long.valueOf(Objects.requireNonNull(claims.get("userId")).toString());
-            loginUser = (LoginUser) redisTemplate.opsForValue().get("loginUser" + id);
+            loginUser = (LoginUser) Objects.requireNonNull(redisTemplate.opsForValue().get("loginUser" + id));
         } catch (Exception ex) {
             // 解析Token失败，抛出自定义业务异常
             authentiactionEntryPoint(response);
-           return;
+            return;
         }
-       try {
-           //存入SecurityContexHolder
-           UsernamePasswordAuthenticationToken passwordAuthenticationToken =
-                   new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
-           SecurityContextHolder.getContext().setAuthentication(passwordAuthenticationToken);
-       }catch (Exception e){
-           accessDeniedHandler(response);
-           return;
-       }
+        try {
+            //存入SecurityContexHolder
+            UsernamePasswordAuthenticationToken passwordAuthenticationToken =
+                    new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(passwordAuthenticationToken);
+        } catch (Exception e) {
+            accessDeniedHandler(response);
+            return;
+        }
 
         filterChain.doFilter(request, response);
         return;
     }
+
     private void accessDeniedHandler(HttpServletResponse response) throws IOException {
         //处理异常
         response.setContentType("application/json");
@@ -75,6 +76,7 @@ public class TokenFilter extends OncePerRequestFilter {
         response.setCharacterEncoding("utf-8");
         response.getWriter().print(JSON.toJSON(R.error(NO_PERMISSION)));
     }
+
     private void authentiactionEntryPoint(HttpServletResponse response) throws IOException {
         //处理异常
         response.setContentType("application/json");

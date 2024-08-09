@@ -1,7 +1,6 @@
 package top.frium.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import top.frium.pojo.entity.User;
 import top.frium.pojo.entity.UserInfo;
 
 /**

@@ -15,6 +15,17 @@ public interface CommonConstant {
     String DEFAULT_SEX = "男";
     String DEFAULT_AREA = "中国";
     String DEFAULT_PERSONAL_SIGNATURE = "这个人很懒什么都没有留下~";
-
     DateTimeFormatter DATA_TIME_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    Integer GROUP_NORMAL_STATUS = 1;
+    Integer GROUP_FORBIDDEN_STATUS = 0;
+
+    Integer NOT_FRIEND = 0;
+    Integer CONTACT_FRIEND = 1;
+    Integer DELETE = 2;
+    Integer BE_DELETE = 3;
+    Integer BLACKLIST = 4;
+    Integer BE_BLACKLIST = 5;
+
+    Integer FRIEND_CONTACT_TYPE = 0;
+    Integer GROUP_CONTACT_TYPE = 1;
 }

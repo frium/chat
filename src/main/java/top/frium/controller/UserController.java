@@ -1,5 +1,6 @@
 package top.frium.controller;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -19,9 +20,9 @@ import top.frium.service.UserService;
  * @date 2024-07-29 23:33:26
  * @description
  */
-
+@Api("用户基础功能接口")
 @Validated
-@RestController("UserController")
+@RestController
 @RequestMapping("/user")
 public class UserController {
     @Autowired
