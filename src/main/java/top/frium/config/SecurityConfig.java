@@ -26,14 +26,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/user/logout").authenticated() // 接口需要认证
-                        .anyRequest().permitAll()) // 其他所有请求都允许
+                        .requestMatchers("/user/registerByEmail", "/user/loginByEmail",
+                                "/usr/forgetPassword","getEmailSMS").permitAll() // 允许登录和注册请求
+                        .anyRequest().authenticated()) // 其他所有请求都需要认证
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable) // 根据需要禁用CSRF保护
                 .httpBasic(AbstractHttpConfigurer::disable) // 禁用基本明文验证
-                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);// 添加过滤器
-
-
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class); // 添加过滤器
         return http.build(); // 构建SecurityFilterChain实例并返回
     }
 

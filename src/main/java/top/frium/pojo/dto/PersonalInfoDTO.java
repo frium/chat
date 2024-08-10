@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -32,7 +31,7 @@ public class PersonalInfoDTO {
     @Max(value = 1, message = "添加方式只能为1或0")
     @Min(value = 0, message = "添加方式只能为1或0")
     @ApiModelProperty(value = "添加方式,默认为1(需要同意后才能成为好友),0为直接添加不需要号主同意", required = true)
-    Long addMethod;
+    Integer addMethod;
 
     @NotNull(message = "个人签名不能为null")
     @ApiModelProperty("个性签名,可以为空")

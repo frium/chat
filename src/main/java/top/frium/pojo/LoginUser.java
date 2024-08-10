@@ -24,13 +24,14 @@ import java.util.stream.Collectors;
 public class LoginUser implements UserDetails {
     private User user;
     private List<String> permission;
-
+    private String userId;
     @JSONField(serialize = false)
     private List<GrantedAuthority> authorities;
 
-    public LoginUser(User user, List<String> permission) {
+    public LoginUser(User user, List<String> permission,String userId) {
         this.user = user;
         this.permission = permission;
+        this.userId=userId;
     }
 
     @Override

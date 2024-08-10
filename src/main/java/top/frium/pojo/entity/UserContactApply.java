@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -21,7 +20,7 @@ import java.time.LocalDateTime;
 public class UserContactApply implements Serializable {
     @TableId(value = "apply_id", type = IdType.AUTO)
 
-    private Integer applyId;
+    private Long applyId;
 
     private String applyUserId;
 
@@ -32,7 +31,7 @@ public class UserContactApply implements Serializable {
 
     private String applyTime;
 
-    private Long status;
+    private Integer status;
 
     private String applyInfo;
 

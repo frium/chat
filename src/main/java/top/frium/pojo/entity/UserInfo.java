@@ -17,7 +17,7 @@ public class UserInfo {
     private String userId;
     private String nickName;
     private String sex;
-    private Long addMethod;
+    private Integer addMethod;
     private String personalSignature;
     private String avatar;
     private String createTime;

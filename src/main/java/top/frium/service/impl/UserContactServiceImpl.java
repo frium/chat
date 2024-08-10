@@ -38,7 +38,7 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         UserInfo user = userInfoService.lambdaQuery().eq(UserInfo::getUserId, applyAddDTO.getAddId()).one();
         if (user == null) throw new MyException(StatusCodeEnum.NOT_FOUND);
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userInfoService.getById(loginUser.getUser().getId()).getUserId();
+        String userId = loginUser.getUserId();
         //查询对方是否已经添加,判断是否被拉黑
         UserContact contact = lambdaQuery().eq(UserContact::getUserId, userId).eq(UserContact::getContactId, applyAddDTO.getAddId())
                 .select(UserContact::getContactType).one();

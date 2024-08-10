@@ -1,7 +1,6 @@
 package top.frium.Filter;
 
 
-import com.alibaba.fastjson.JSON;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,8 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import top.frium.common.R;
 import top.frium.pojo.LoginUser;
+import top.frium.uitls.ExceptionUtil;
 import top.frium.uitls.JwtUtil;
 
 import java.io.IOException;
@@ -23,6 +22,8 @@ import java.util.Objects;
 
 import static top.frium.common.StatusCodeEnum.NOT_LOGIN;
 import static top.frium.common.StatusCodeEnum.NO_PERMISSION;
+import static top.frium.context.CommonConstant.LOGIN_USER;
+import static top.frium.context.CommonConstant.USER_ID;
 
 
 @Component
@@ -35,6 +36,8 @@ public class TokenFilter extends OncePerRequestFilter {
     private String tokenName;
     @Autowired
     RedisTemplate<Object, Object> redisTemplate;
+    @Autowired
+    ExceptionUtil exceptionUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -48,11 +51,11 @@ public class TokenFilter extends OncePerRequestFilter {
         try {
             // 解析Token，获取其中的Claims对象
             Claims claims = JwtUtil.parseToken(secretKey, token);
-            id = Long.valueOf(Objects.requireNonNull(claims.get("userId")).toString());
-            loginUser = (LoginUser) Objects.requireNonNull(redisTemplate.opsForValue().get("loginUser" + id));
+            id = Long.valueOf(Objects.requireNonNull(claims.get(USER_ID)).toString());
+            loginUser = (LoginUser) Objects.requireNonNull(redisTemplate.opsForValue().get(LOGIN_USER + id));
         } catch (Exception ex) {
             // 解析Token失败，抛出自定义业务异常
-            authentiactionEntryPoint(response);
+            exceptionUtil.throwException(response, NOT_LOGIN);
             return;
         }
         try {
@@ -61,7 +64,7 @@ public class TokenFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(passwordAuthenticationToken);
         } catch (Exception e) {
-            accessDeniedHandler(response);
+            exceptionUtil.throwException(response, NO_PERMISSION);
             return;
         }
 
@@ -69,19 +72,4 @@ public class TokenFilter extends OncePerRequestFilter {
         return;
     }
 
-    private void accessDeniedHandler(HttpServletResponse response) throws IOException {
-        //处理异常
-        response.setContentType("application/json");
-        response.setStatus(403);
-        response.setCharacterEncoding("utf-8");
-        response.getWriter().print(JSON.toJSON(R.error(NO_PERMISSION)));
-    }
-
-    private void authentiactionEntryPoint(HttpServletResponse response) throws IOException {
-        //处理异常
-        response.setContentType("application/json");
-        response.setStatus(401);
-        response.setCharacterEncoding("utf-8");
-        response.getWriter().print(JSON.toJSON(R.error(NOT_LOGIN)));
-    }
 }

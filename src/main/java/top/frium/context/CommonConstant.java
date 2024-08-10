@@ -11,7 +11,7 @@ public interface CommonConstant {
     String LOGIN_USER = "loginUser";
     String USER_ID = "userId";
     String USERNAME_PREFIX = "用户";
-    Long DEFAULT_ADDITION_METHOD = 1L;
+    Integer DEFAULT_ADDITION_METHOD = 1;
     String DEFAULT_SEX = "男";
     String DEFAULT_AREA = "中国";
     String DEFAULT_PERSONAL_SIGNATURE = "这个人很懒什么都没有留下~";
@@ -20,13 +20,13 @@ public interface CommonConstant {
     DateTimeFormatter DATA_TIME_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     //好友添加方式
-    Long NO_APPLY = 0L;
-    Long NEED_APPLY = 1L;
+    Integer NO_APPLY = 0;
+    Integer NEED_APPLY = 1;
 
     //好友申请状态
-    Long BE_REJECT = -1L;
-    Long UNTREATED = 0L;
-    Long AGREE = 1L;
+    Integer BE_REJECT = -1;
+    Integer UNTREATED = 0;
+    Integer AGREE = 1;
 
 
     //群的状态

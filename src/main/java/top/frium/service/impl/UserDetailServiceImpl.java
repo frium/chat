@@ -11,6 +11,7 @@ import top.frium.common.StatusCodeEnum;
 import top.frium.mapper.UserMapper;
 import top.frium.pojo.LoginUser;
 import top.frium.pojo.entity.User;
+import top.frium.service.UserInfoService;
 
 import java.util.List;
 
@@ -23,6 +24,8 @@ import java.util.List;
 public class UserDetailServiceImpl extends ServiceImpl<UserMapper, User> implements UserDetailsService {
     @Autowired
     UserMapper userMapper;
+    @Autowired
+    UserInfoService userInfoService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -30,7 +33,9 @@ public class UserDetailServiceImpl extends ServiceImpl<UserMapper, User> impleme
         User user = lambdaQuery().eq(User::getEmail, username).one();
         if (user == null) throw new MyException(StatusCodeEnum.LOGIN_FAIL);
         List<String> list = userMapper.getUserPermission(user.getId());
+        //获取userId
+        String userId = userInfoService.getById(user.getId()).getUserId();
         //把数据封装成UserDetails
-        return new LoginUser(user, list);
+        return new LoginUser(user, list, userId);
     }
 }

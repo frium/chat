@@ -42,7 +42,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         groupInfo.setCoverImage(DEFAULT_AVATAR);
         //设置自己为群主
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userInfoService.getById(loginUser.getUser().getId()).getUserId();
+        String userId = loginUser.getUserId();
         groupInfo.setGroupOwnerId(userId);
         groupInfo.setCreateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
         groupInfo.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
@@ -68,7 +68,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         GroupInfo groupInfo = lambdaQuery().eq(GroupInfo::getGroupId, uploadGroupDTO.getGroupId()).one();
         if (groupInfo == null) throw new MyException(StatusCodeEnum.NOT_FOUND);
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userInfoService.getById(loginUser.getUser().getId()).getUserId();
+        String userId = loginUser.getUserId();
         if (!Objects.equals(groupInfo.getGroupOwnerId(), userId)) throw new MyException(StatusCodeEnum.NO_PERMISSION);
         //更新相关信息
         GroupInfo updateGroupInfo = new GroupInfo();
@@ -83,10 +83,11 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     public GroupInfoVO getGroupInfo(String groupId) {
         //判断当前发起请求的人是否是群聊内的人
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userInfoService.getById(loginUser.getUser().getId()).getUserId();
+        String userId = loginUser.getUserId();
         UserContact contact = userContactService.lambdaQuery()
                 .eq(UserContact::getUserId, userId)
-                .eq(UserContact::getContactId, groupId).one();
+                .eq(UserContact::getContactId, groupId)
+                .select(UserContact::getContactType).one();
         if (contact == null || FRIEND_CONTACT_TYPE.equals(contact.getContactType()))
             throw new MyException(StatusCodeEnum.NOT_FOUND);
         //查询具体信息
