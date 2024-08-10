@@ -13,6 +13,9 @@ import top.frium.pojo.dto.CreateGroupDTO;
 import top.frium.pojo.dto.UploadGroupDTO;
 import top.frium.pojo.entity.GroupInfo;
 import top.frium.pojo.entity.UserContact;
+import top.frium.pojo.entity.UserInfo;
+import top.frium.pojo.vo.GroupInfoVO;
+import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.GroupInfoService;
 import top.frium.service.UserContactService;
 import top.frium.service.UserInfoService;
@@ -28,29 +31,32 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     UserInfoService userInfoService;
     @Autowired
     UserContactService userContactService;
+    @Autowired
+    GroupInfoMapper groupInfoMapper;
 
     @Override
     public void createGroup(CreateGroupDTO createGroupDTO) {
         //TODO 将图片存入本地
         GroupInfo groupInfo = new GroupInfo();
         BeanUtils.copyProperties(createGroupDTO, groupInfo);
-        groupInfo.setCoverImage("https://blog.frium.top/upload/%E6%B5%81%E8%90%A4.jpg");
+        groupInfo.setCoverImage(DEFAULT_AVATAR);
         //设置自己为群主
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = userInfoService.getById(loginUser.getUser().getId()).getUserId();
         groupInfo.setGroupOwnerId(userId);
         groupInfo.setCreateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
+        groupInfo.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
         groupInfo.setStatus(GROUP_NORMAL_STATUS);
         save(groupInfo);
 
         //将群设为自己的联系人
-        UserContact userContact=new UserContact();
+        UserContact userContact = new UserContact();
         userContact.setUserId(userId);
-        userContact.setStatus(CONTACT_FRIEND);
+        userContact.setStatus(FRIEND);
         userContact.setContactType(GROUP_CONTACT_TYPE);
         userContact.setCreateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
         userContact.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
-        userContact.setContactId(String.valueOf(groupInfo.getGroupId()));
+        userContact.setContactId(Math.toIntExact(groupInfo.getGroupId()));
         userContactService.save(userContact);
 
         //TODO 创建会话  发送消息
@@ -60,15 +66,44 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     public void uploadGroup(UploadGroupDTO uploadGroupDTO) {
         //判断发起人是否是群主
         GroupInfo groupInfo = lambdaQuery().eq(GroupInfo::getGroupId, uploadGroupDTO.getGroupId()).one();
-        if(groupInfo ==null) throw new MyException(StatusCodeEnum.NOT_FOUND);
+        if (groupInfo == null) throw new MyException(StatusCodeEnum.NOT_FOUND);
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = userInfoService.getById(loginUser.getUser().getId()).getUserId();
-        if(!Objects.equals(groupInfo.getGroupOwnerId(), userId)) throw new MyException(StatusCodeEnum.NO_PERMISSION);
+        if (!Objects.equals(groupInfo.getGroupOwnerId(), userId)) throw new MyException(StatusCodeEnum.NO_PERMISSION);
         //更新相关信息
-        GroupInfo updateGroupInfo =new GroupInfo();
+        GroupInfo updateGroupInfo = new GroupInfo();
+        updateGroupInfo.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
         BeanUtils.copyProperties(uploadGroupDTO, updateGroupInfo);
         lambdaUpdate().eq(GroupInfo::getGroupId, uploadGroupDTO.getGroupId()).update(updateGroupInfo);
 
         //TODO 发送消息修改群名称
+    }
+
+    @Override
+    public GroupInfoVO getGroupInfo(String groupId) {
+        //判断当前发起请求的人是否是群聊内的人
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = userInfoService.getById(loginUser.getUser().getId()).getUserId();
+        UserContact contact = userContactService.lambdaQuery()
+                .eq(UserContact::getUserId, userId)
+                .eq(UserContact::getContactId, groupId).one();
+        if (contact == null || FRIEND_CONTACT_TYPE.equals(contact.getContactType()))
+            throw new MyException(StatusCodeEnum.NOT_FOUND);
+        //查询具体信息
+        GroupInfo groupInfo = lambdaQuery().eq(GroupInfo::getGroupId, groupId).one();
+        if (groupInfo == null || GROUP_FORBIDDEN_STATUS.equals(groupInfo.getStatus()))
+            throw new MyException(StatusCodeEnum.NOT_FOUND);
+        //查询成员数量
+        Long memberNumber = userContactService.lambdaQuery().eq(UserContact::getContactType, GROUP_CONTACT_TYPE)
+                .eq(UserContact::getContactId, groupId).count();
+        //获取群主的详细信息
+        UserInfo userInfo = userInfoService.lambdaQuery().eq(UserInfo::getUserId, groupInfo.getGroupOwnerId()).one();
+        UserInfoVO userInfoVO=new UserInfoVO();
+        BeanUtils.copyProperties(userInfo,userInfoVO);
+        GroupInfoVO groupInfoVO = new GroupInfoVO();
+        BeanUtils.copyProperties(groupInfo, groupInfoVO);
+        groupInfoVO.setMemberNumber(memberNumber);
+        groupInfoVO.setUserInfoVO(userInfoVO);
+        return groupInfoVO;
     }
 }

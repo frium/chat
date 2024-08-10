@@ -1,11 +1,13 @@
 package top.frium.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.multipart.MultipartFile;
 import top.frium.pojo.dto.ForgetPasswordDTO;
 import top.frium.pojo.dto.LoginEmailDTO;
 import top.frium.pojo.dto.PersonalInfoDTO;
 import top.frium.pojo.dto.RegisterEmailDTO;
 import top.frium.pojo.entity.User;
+import top.frium.pojo.vo.UserInfoVO;
 
 /**
  *
@@ -24,4 +26,8 @@ public interface UserService extends IService<User> {
     void modifyPersonalInfo(PersonalInfoDTO personalInfoDTO);
 
     void logout();
+
+    UserInfoVO getPersonalInfo();
+
+    void uploadAvatar(MultipartFile avatar);
 }

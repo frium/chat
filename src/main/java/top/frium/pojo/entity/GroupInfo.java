@@ -1,5 +1,7 @@
 package top.frium.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 /**
@@ -9,19 +11,22 @@ import lombok.Data;
  */
 @Data
 public class GroupInfo {
-    Long groupId;
+    @TableId(value = "group_id", type = IdType.AUTO)
+    private Long groupId;
 
-    String groupName;
+    private String groupName;
 
-    String groupOwnerId;
+    private String groupOwnerId;
 
-    String groupNotice;
+    private String groupNotice;
 
-    Integer joinType;
+    private Integer joinType;
 
-    String coverImage;
+    private String coverImage;
 
-    String createTime;
+    private String createTime;
 
-    Integer status;
+    private String lastUpdateTime;
+
+    private Integer status;
 }

@@ -22,7 +22,6 @@ public class GlobalExceptionHandler {
     private HttpServletResponse response;
 
 
-
     @ExceptionHandler(MyException.class)
     public R<?> myExceptionHandler(MyException e) {
         log.info("业务异常信息：{}", e.getMessage());
@@ -35,7 +34,7 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(HttpMediaTypeNotSupportedException.class  )
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public R<?> formatExceptionHandler(HttpMediaTypeNotSupportedException e) {
         log.error("参数格式错误, {}", e.getMessage());
         response.setStatus(StatusCodeEnum.VALUE_ERROR.getHttpStatusCode());
@@ -58,7 +57,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<String> exception(Exception e) {
         log.error("未知异常！ msg: -> ", e);
-        return R.error("服务器异常!"+e.getMessage());
+        return R.error("服务器异常!" + e.getMessage());
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -66,7 +65,7 @@ public class GlobalExceptionHandler {
     public R<?> runtimeExceptionHandler(RuntimeException e) {
         log.info("运行时异常：" + e.getMessage());
         e.printStackTrace();//后台输出具体异常
-        return R.error("运行时异常"+e.getMessage());
+        return R.error("运行时异常" + e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

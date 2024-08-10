@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import top.frium.common.MyException;
 import top.frium.common.StatusCodeEnum;
 import top.frium.context.BaseContext;
@@ -22,6 +23,7 @@ import top.frium.pojo.dto.PersonalInfoDTO;
 import top.frium.pojo.dto.RegisterEmailDTO;
 import top.frium.pojo.entity.User;
 import top.frium.pojo.entity.UserInfo;
+import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.UserInfoService;
 import top.frium.service.UserService;
 import top.frium.uitls.EmailUtil;
@@ -89,6 +91,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 DEFAULT_SEX,
                 DEFAULT_ADDITION_METHOD,
                 DEFAULT_PERSONAL_SIGNATURE,
+                DEFAULT_AVATAR,
                 now, null, null,
                 DEFAULT_AREA, currentIp, getIpSource(currentIp)
         );
@@ -111,7 +114,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Long id = loginUser.getUser().getId();
         //修改登录时间
         userInfoService.lambdaUpdate().eq(UserInfo::getId, id)
-                        .set(UserInfo::getLastLoginTime, LocalDateTime.now().format(DATA_TIME_PATTERN)).update();
+                .set(UserInfo::getLastLoginTime, LocalDateTime.now().format(DATA_TIME_PATTERN)).update();
         redisTemplate.opsForValue().set(LOGIN_USER + id, loginUser, 7, TimeUnit.DAYS);
         Map<String, Object> claims = new HashMap<>();
         claims.put(USER_ID, id);
@@ -145,5 +148,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //修改下线时间
         userInfoService.lambdaUpdate().eq(UserInfo::getId, loginUser.getUser().getId())
                 .set(UserInfo::getLastOffTime, LocalDateTime.now().format(DATA_TIME_PATTERN)).update();
+    }
+
+    @Override
+    public UserInfoVO getPersonalInfo() {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserInfo userInfo = userInfoService.lambdaQuery().eq(UserInfo::getId, loginUser.getUser().getId()).one();
+        UserInfoVO userInfoVO = new UserInfoVO();
+        BeanUtils.copyProperties(userInfo, userInfoVO);
+        return userInfoVO;
+    }
+
+    @Override
+    public void uploadAvatar(MultipartFile avatar) {
+        //TODO 修改头像
     }
 }

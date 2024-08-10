@@ -13,17 +13,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfo {
-    Long id;
-    String userId;
-    String nickName;
-    String sex;
-    Long addMethod;
-    String personalSignature;
-    String createTime;
-    String lastLoginTime;
-    String lastOffTime;
-    String area;
-    String ip;
-    String ipAddress;
+    private Long id;
+    private String userId;
+    private String nickName;
+    private String sex;
+    private Long addMethod;
+    private String personalSignature;
+    private String avatar;
+    private String createTime;
+    private String lastLoginTime;
+    private String lastOffTime;
+    private String area;
+    private String ip;
+    private String ipAddress;
 
 }

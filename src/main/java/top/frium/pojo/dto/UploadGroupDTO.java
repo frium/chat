@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,4 +35,5 @@ public class UploadGroupDTO {
 
     @ApiModelProperty(value = "群聊封面(头像)",required = true)
     MultipartFile coverImage;
+
 }

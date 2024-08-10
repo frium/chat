@@ -19,7 +19,10 @@ public enum StatusCodeEnum {
     PERSONAL_ID_ERROR(1005,"身份证格式有误",200),
     PHONE_ERROR(1006,"手机号格式有误",200),
     PASSWORD_ERROR(1007,"密码格式有误",200),
-    NO_PERMISSION(1008,"无权限访问",403);
+    NO_PERMISSION(1008,"无权限访问",403),
+    BE_BLACKLIST(1009,"对方以将你拉黑,无法添加好友",200),
+    IS_FRIEND(1010,"您和对方已经是好友了,无需继续添加",200),
+    IS_APPLY(1011,"您已经发送过好友申请了,请等候对方的回复",200);
 
     private final Integer code;
     private final String desc;

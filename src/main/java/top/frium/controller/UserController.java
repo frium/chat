@@ -8,11 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import top.frium.common.R;
 import top.frium.pojo.dto.ForgetPasswordDTO;
 import top.frium.pojo.dto.LoginEmailDTO;
 import top.frium.pojo.dto.PersonalInfoDTO;
 import top.frium.pojo.dto.RegisterEmailDTO;
+import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.UserService;
 
 /**
@@ -65,11 +67,24 @@ public class UserController {
         userService.forgetPassword(passwordDTO);
         return R.success();
     }
+
     @ApiOperation("修改个人信息")
     @PutMapping("/modifyPersonalInfo")
-    public R<?>  modifyPersonalInfo(@Valid @RequestBody PersonalInfoDTO personalInfoDTO){
+    public R<?> modifyPersonalInfo(@Valid @RequestBody PersonalInfoDTO personalInfoDTO) {
         userService.modifyPersonalInfo(personalInfoDTO);
         return R.success();
     }
 
+    @ApiOperation("获取个人信息")
+    @GetMapping("/getPersonalInfo")
+    public R<UserInfoVO> getPersonalInfo() {
+        return R.success(userService.getPersonalInfo());
+    }
+
+    @ApiOperation("修改个人头像")
+    @PostMapping("/uploadAvatar")
+    public R<?> uploadAvatar(MultipartFile avatar) {
+        userService.uploadAvatar(avatar);
+        return R.success();
+    }
 }

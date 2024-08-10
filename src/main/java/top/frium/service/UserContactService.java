@@ -2,6 +2,7 @@ package top.frium.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import top.frium.pojo.dto.ApplyAddDTO;
 import top.frium.pojo.entity.UserContact;
 
 /**
@@ -14,4 +15,5 @@ import top.frium.pojo.entity.UserContact;
  */
 public interface UserContactService extends IService<UserContact> {
 
+    void applyAdd(ApplyAddDTO applyAddDTO);
 }
