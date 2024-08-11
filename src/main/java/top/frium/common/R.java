@@ -15,7 +15,7 @@ public class R<T> implements Serializable {
     @ApiModelProperty(value = "错误信息",required = true)
     @NotNull
     private String msg;
-    @ApiModelProperty(value = "数据",dataType = "String")
+    @ApiModelProperty(value = "数据",required = true)
     private T data;
 
 

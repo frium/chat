@@ -3,6 +3,7 @@ package top.frium.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,7 +23,7 @@ import top.frium.service.UserService;
  * @date 2024-07-29 23:33:26
  * @description
  */
-@Api("用户基础功能接口")
+@Api("登录注册接口")
 @Validated
 @RestController
 @RequestMapping("/user")
@@ -68,23 +69,5 @@ public class UserController {
         return R.success();
     }
 
-    @ApiOperation("修改个人信息")
-    @PutMapping("/modifyPersonalInfo")
-    public R<?> modifyPersonalInfo(@Valid @RequestBody PersonalInfoDTO personalInfoDTO) {
-        userService.modifyPersonalInfo(personalInfoDTO);
-        return R.success();
-    }
 
-    @ApiOperation("获取个人信息")
-    @GetMapping("/getPersonalInfo")
-    public R<UserInfoVO> getPersonalInfo() {
-        return R.success(userService.getPersonalInfo());
-    }
-
-    @ApiOperation("修改个人头像")
-    @PostMapping("/uploadAvatar")
-    public R<?> uploadAvatar(MultipartFile avatar) {
-        userService.uploadAvatar(avatar);
-        return R.success();
-    }
 }

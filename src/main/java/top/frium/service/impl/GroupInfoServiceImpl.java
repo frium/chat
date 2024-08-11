@@ -56,7 +56,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         userContact.setContactType(GROUP_CONTACT_TYPE);
         userContact.setCreateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
         userContact.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
-        userContact.setContactId(Math.toIntExact(groupInfo.getGroupId()));
+        userContact.setContactId(String.valueOf(groupInfo.getGroupId()));
         userContactService.save(userContact);
 
         //TODO 创建会话  发送消息

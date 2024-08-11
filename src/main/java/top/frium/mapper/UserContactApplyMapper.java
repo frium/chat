@@ -3,6 +3,9 @@ package top.frium.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import top.frium.pojo.entity.UserContactApply;
+import top.frium.pojo.vo.ApplyVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,5 +17,10 @@ import top.frium.pojo.entity.UserContactApply;
  */
 @Mapper
 public interface UserContactApplyMapper extends BaseMapper<UserContactApply> {
+    List<ApplyVO> loadMyApply(String userId);
+
+    List<ApplyVO> loadAddMeApply(String userId);
+
+    void upLoadPersonalId(String userId, String newId);
 
 }

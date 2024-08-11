@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.frium.mapper.UserContactMapper">
+    <update id="upLoadPersonalId">
+        update user_contact
+        set user_id    = IF(user_id = #{userId}, #{newId}, user_id),
+            contact_id = IF(contact_id = #{userId}, #{newId}, contact_id)
+        where user_id = #{userId}
+           or contact_id = #{userId}
+    </update>
 
+    <select id="getFriend" resultType="top.frium.pojo.vo.FriendListVO" parameterType="java.lang.String">
+        select contact_id, nick_name, avatar
+        from user_contact
+                 join user_info on user_info.user_id = contact_id
+        where user_contact.user_id = #{userId}
+          and user_contact.status = 1;
+    </select>
 </mapper>

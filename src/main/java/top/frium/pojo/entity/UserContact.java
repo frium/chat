@@ -19,7 +19,7 @@ import java.io.Serializable;
 public class UserContact implements Serializable {
     private String userId;
 
-    private Integer contactId;
+    private String contactId;
 
     @ApiModelProperty("0好友类型 1群类型")
     private Integer contactType;

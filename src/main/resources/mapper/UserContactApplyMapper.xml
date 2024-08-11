@@ -1,5 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.frium.mapper.UserContactApplyMapper">
+    <!-- 定义 UserInfoVO 的 resultMap -->
+    <resultMap id="UserInfoVOResultMap" type="top.frium.pojo.vo.UserInfoVO">
+        <id property="userId" column="user_id"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="sex" column="sex"/>
+        <result property="personalSignature" column="personal_signature"/>
+        <result property="addMethod" column="add_method"/>
+        <result property="area" column="area"/>
+        <result property="avatar" column="avatar"/>
+    </resultMap>
 
+    <!-- 定义 ApplyVO 的 resultMap -->
+    <resultMap id="ApplyVOResultMap" type="top.frium.pojo.vo.ApplyVO">
+        <result property="applyTime" column="apply_time"/>
+        <result property="status" column="status"/>
+        <result property="applyInfo" column="apply_info"/>
+        <!-- 嵌套映射 UserInfoVO -->
+        <association property="userInfoVO" javaType="top.frium.pojo.vo.UserInfoVO" resultMap="UserInfoVOResultMap"/>
+    </resultMap>
+    <update id="upLoadPersonalId" parameterType="java.lang.String">
+        update user_contact_apply
+        set apply_user_id   = IF(apply_user_id = #{userId}, #{newId}, apply_user_id),
+            receive_user_id = IF(receive_user_id = #{userId}, #{newId}, receive_user_id)
+        where apply_user_id = #{userId}
+           or receive_user_id = #{userId}
+    </update>
+
+    <!-- 使用 resultMap -->
+    <select id="loadMyApply" resultMap="ApplyVOResultMap">
+        SELECT uca.contact_type,
+               uca.apply_time,
+               uca.status,
+               uca.apply_info,
+               ui.user_id,
+               ui.nick_name,
+               ui.sex,
+               ui.personal_signature,
+               ui.add_method,
+               ui.area,
+               ui.avatar
+        FROM user_contact_apply uca
+                 JOIN user_info ui ON uca.receive_user_id = ui.user_id
+        WHERE uca.apply_user_id = #{userId}
+        ORDER BY uca.apply_time DESC
+    </select>
+    <select id="loadAddMeApply" resultMap="ApplyVOResultMap">
+        SELECT uca.contact_type,
+               uca.apply_time,
+               uca.status,
+               uca.apply_info,
+               ui.user_id,
+               ui.nick_name,
+               ui.sex,
+               ui.personal_signature,
+               ui.add_method,
+               ui.area,
+               ui.avatar
+        FROM user_contact_apply uca
+                 JOIN user_info ui ON uca.apply_user_id = ui.user_id
+        WHERE uca.receive_user_id = #{userId}
+        ORDER BY uca.apply_time DESC
+    </select>
 </mapper>

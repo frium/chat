@@ -15,26 +15,32 @@ import org.springframework.web.multipart.MultipartFile;
 import top.frium.common.MyException;
 import top.frium.common.StatusCodeEnum;
 import top.frium.context.BaseContext;
+import top.frium.mapper.UserContactApplyMapper;
+import top.frium.mapper.UserContactMapper;
 import top.frium.mapper.UserMapper;
 import top.frium.pojo.LoginUser;
 import top.frium.pojo.dto.ForgetPasswordDTO;
 import top.frium.pojo.dto.LoginEmailDTO;
 import top.frium.pojo.dto.PersonalInfoDTO;
 import top.frium.pojo.dto.RegisterEmailDTO;
+import top.frium.pojo.entity.GroupInfo;
 import top.frium.pojo.entity.User;
 import top.frium.pojo.entity.UserInfo;
 import top.frium.pojo.vo.UserInfoVO;
+import top.frium.service.GroupInfoService;
 import top.frium.service.UserInfoService;
 import top.frium.service.UserService;
 import top.frium.uitls.EmailUtil;
 import top.frium.uitls.JwtUtil;
 
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static top.frium.common.StatusCodeEnum.IS_HAVE;
+import static top.frium.common.StatusCodeEnum.NOT_TIME;
 import static top.frium.context.CommonConstant.*;
 import static top.frium.uitls.IpUtil.getIpSource;
 
@@ -59,6 +65,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     UserMapper userMapper;
     @Autowired
     UserInfoService userInfoService;
+    @Autowired
+    UserContactApplyMapper userContactApplyMapper;
+    @Autowired
+    UserContactMapper userContactMapper;
+    @Autowired
+    GroupInfoService groupInfoService;
 
     @Override
     public void getEmailSMS(String email) {
@@ -93,7 +105,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 DEFAULT_PERSONAL_SIGNATURE,
                 DEFAULT_AVATAR,
                 now, null, null,
-                DEFAULT_AREA, currentIp, getIpSource(currentIp)
+                DEFAULT_AREA, currentIp, getIpSource(currentIp),
+                Instant.ofEpochSecond(0).atZone(ZoneId.systemDefault()).toLocalDateTime().format(DATA_TIME_PATTERN)
         );
         userInfoService.save(userInfo);
         userMapper.addUserPermission(user.getId());
@@ -128,8 +141,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (o == null || !forgetPasswordDTO.getVerify().equals(o.toString())) {
             throw new MyException(StatusCodeEnum.ERROR_VERIFY);
         }
+        //生成新密码
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        String newPassword = bCryptPasswordEncoder.encode(forgetPasswordDTO.getNewPassword());
         boolean update = lambdaUpdate().eq(User::getEmail, forgetPasswordDTO.getEmail())
-                .set(User::getPassword, forgetPasswordDTO.getNewPassword()).update();
+                .set(User::getPassword, newPassword).update();
         if (!update) throw new MyException(StatusCodeEnum.USER_NOT_EXIST);
     }
 
@@ -162,5 +178,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public void uploadAvatar(MultipartFile avatar) {
         //TODO 修改头像
+    }
+
+    @Override
+    public void modifyPersonalId(String newId) {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = loginUser.getUserId();
+        //查看上次修改id的时间
+        String userIdUpdateLastTime = userInfoService.lambdaQuery().eq(UserInfo::getUserId, userId).select(UserInfo::getUserIdLastUpdateTime)
+                .one().getUserIdLastUpdateTime();
+        //查看id是否是当前自己的
+        if (userId.equals(newId)) throw new MyException(IS_HAVE);
+        // 获取当前时间
+        ZonedDateTime now = ZonedDateTime.now();
+        LocalDateTime lastUpdateTime = LocalDateTime.parse(userIdUpdateLastTime, DATA_TIME_PATTERN);
+        // 将 LocalDateTime 转换为 ZonedDateTime
+        ZonedDateTime lastUpdateZonedDateTime = lastUpdateTime.atZone(ZoneId.systemDefault());
+        // 计算时间差
+        Duration duration = Duration.between(lastUpdateZonedDateTime, now);
+        if (duration.toDays() < 365) throw new MyException(NOT_TIME);
+        //先查看id是否已经存在
+        boolean flag = userInfoService.lambdaQuery().eq(UserInfo::getUserId, newId).count() > 0;
+        if (flag) throw new MyException(StatusCodeEnum.ID_EXIST);
+        //更改id
+        userInfoService.lambdaUpdate().eq(UserInfo::getUserId, userId).set(UserInfo::getUserId, newId)
+                .set(UserInfo::getUserIdLastUpdateTime, LocalDateTime.now().format(DATA_TIME_PATTERN)).update();
+        userContactApplyMapper.upLoadPersonalId(userId, newId);
+        userContactMapper.upLoadPersonalId(userId, newId);
+        groupInfoService.lambdaUpdate().eq(GroupInfo::getGroupOwnerId, userId).set(GroupInfo::getGroupOwnerId, newId).update();
+        //更新redis
+        loginUser.setUserId(newId);
+        redisTemplate.opsForValue().set(LOGIN_USER + loginUser.getUser().getId(), loginUser, 7, TimeUnit.DAYS);
+    }
+
+    @Override
+    public String getLastUploadIdTime() {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = loginUser.getUserId();
+        return userInfoService.lambdaQuery().eq(UserInfo::getUserId, userId).select(UserInfo::getUserIdLastUpdateTime)
+                .one().getUserIdLastUpdateTime();
     }
 }

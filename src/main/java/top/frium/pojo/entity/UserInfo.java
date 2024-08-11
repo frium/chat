@@ -26,5 +26,6 @@ public class UserInfo {
     private String area;
     private String ip;
     private String ipAddress;
+    private String userIdLastUpdateTime;
 
 }

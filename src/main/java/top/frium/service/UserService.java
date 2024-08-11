@@ -30,4 +30,8 @@ public interface UserService extends IService<User> {
     UserInfoVO getPersonalInfo();
 
     void uploadAvatar(MultipartFile avatar);
+
+    void modifyPersonalId(String userId);
+
+    String getLastUploadIdTime();
 }

@@ -16,9 +16,6 @@ import lombok.Data;
 @Data
 @ApiModel("修改个人信息,可以选择部分不修改")
 public class PersonalInfoDTO {
-    @NotEmpty(message = "个人id不能为空")
-    @ApiModelProperty(value = "用户id,可以用于搜索用户", required = true)
-    String userId;
 
     @NotEmpty(message = "用户昵称不能为空")
     @ApiModelProperty(value = "用户昵称", required = true)

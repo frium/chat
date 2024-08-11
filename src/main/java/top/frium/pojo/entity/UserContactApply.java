@@ -19,7 +19,6 @@ import java.io.Serializable;
 @ApiModel(value = "UserContactApply对象", description = "")
 public class UserContactApply implements Serializable {
     @TableId(value = "apply_id", type = IdType.AUTO)
-
     private Long applyId;
 
     private String applyUserId;
@@ -27,7 +26,6 @@ public class UserContactApply implements Serializable {
     private String receiveUserId;
 
     private Integer contactType;
-
 
     private String applyTime;
 

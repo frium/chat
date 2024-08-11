@@ -3,7 +3,12 @@ package top.frium.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import top.frium.pojo.dto.ApplyAddDTO;
+import top.frium.pojo.dto.ProcessApplyDTO;
 import top.frium.pojo.entity.UserContact;
+import top.frium.pojo.vo.ApplyVO;
+import top.frium.pojo.vo.FriendListVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -16,4 +21,12 @@ import top.frium.pojo.entity.UserContact;
 public interface UserContactService extends IService<UserContact> {
 
     void applyAdd(ApplyAddDTO applyAddDTO);
+
+    List<ApplyVO> loadMyApply();
+
+    List<ApplyVO>loadAddMeApply();
+
+    void processApply(ProcessApplyDTO processApplyDTO);
+
+    List<FriendListVO> getFriendList();
 }

@@ -7,18 +7,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import top.frium.common.MyException;
 import top.frium.common.StatusCodeEnum;
+import top.frium.mapper.UserContactApplyMapper;
 import top.frium.mapper.UserContactMapper;
 import top.frium.pojo.LoginUser;
 import top.frium.pojo.dto.ApplyAddDTO;
+import top.frium.pojo.dto.ProcessApplyDTO;
 import top.frium.pojo.entity.UserContact;
 import top.frium.pojo.entity.UserContactApply;
 import top.frium.pojo.entity.UserInfo;
+import top.frium.pojo.vo.ApplyVO;
+import top.frium.pojo.vo.FriendListVO;
 import top.frium.service.UserContactApplyService;
 import top.frium.service.UserContactService;
 import top.frium.service.UserInfoService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import static top.frium.common.StatusCodeEnum.ADD_MYSELF;
 import static top.frium.context.CommonConstant.*;
 
 /**
@@ -31,6 +37,10 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
     UserInfoService userInfoService;
     @Autowired
     UserContactApplyService userContactApplyService;
+    @Autowired
+    UserContactApplyMapper userContactApplyMapper;
+    @Autowired
+    UserContactMapper userContactMapper;
 
     @Override
     public void applyAdd(ApplyAddDTO applyAddDTO) {
@@ -39,6 +49,7 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         if (user == null) throw new MyException(StatusCodeEnum.NOT_FOUND);
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = loginUser.getUserId();
+        if (applyAddDTO.getAddId().equals(userId)) throw new MyException(ADD_MYSELF);
         //查询对方是否已经添加,判断是否被拉黑
         UserContact contact = lambdaQuery().eq(UserContact::getUserId, userId).eq(UserContact::getContactId, applyAddDTO.getAddId())
                 .select(UserContact::getContactType).one();
@@ -50,11 +61,26 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         //查询有没有发过申请,或发过的申请是否被处理,发过就不能再发
         boolean isApply = userContactApplyService.lambdaQuery().eq(UserContactApply::getApplyUserId, userId)
                 .eq(UserContactApply::getReceiveUserId, applyAddDTO.getAddId())
-                .eq(UserContactApply::getStatus,UNTREATED).count() > 0;
+                .eq(UserContactApply::getStatus, UNTREATED).count() > 0;
         if (isApply) throw new MyException(StatusCodeEnum.IS_APPLY);
         //判断添加对方是直接添加还是需要申请
-        if (NEED_APPLY.equals(user.getAddMethod())) {
-            //TODO 直接添加联系人
+        if (NO_APPLY.equals(user.getAddMethod())) {
+            //更新我的好友列表
+            UserContact userContact = new UserContact();
+            userContact.setUserId(userId);
+            userContact.setContactId(applyAddDTO.getAddId());
+            userContact.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
+            userContact.setCreateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
+            userContact.setContactType(FRIEND_CONTACT_TYPE);
+            userContact.setStatus(FRIEND);
+            save(userContact);
+            //更新申请人的好友列表
+            userContact.setContactId(userId);
+            userContact.setUserId((applyAddDTO.getAddId()));
+            save(userContact);
+            //TODO 创建会话
+
+            return;
         }
         //设置发送请求的话术如果没有
         String nickName = userInfoService.lambdaQuery().eq(UserInfo::getUserId, userId)
@@ -73,4 +99,61 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         //TODO 发送ws消息,告诉对方有好友添加消息
 
     }
+
+    @Override
+    public List<ApplyVO> loadMyApply() {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = loginUser.getUserId();
+        return userContactApplyMapper.loadMyApply(userId);
+    }
+
+    @Override
+    public List<ApplyVO> loadAddMeApply() {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = loginUser.getUserId();
+        return userContactApplyMapper.loadAddMeApply(userId);
+    }
+
+    @Override
+    public void processApply(ProcessApplyDTO processApplyDTO) {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = loginUser.getUserId();    //判断是否有请求没被处理
+        Integer selection = processApplyDTO.getSelection();
+        boolean flag = userContactApplyService.lambdaQuery().eq(UserContactApply::getApplyUserId, processApplyDTO.getApplyId())
+                .eq(UserContactApply::getReceiveUserId, userId).eq(UserContactApply::getStatus, UNTREATED).count() > 0;
+        if (!flag || UNTREATED.equals(selection)) throw new MyException(StatusCodeEnum.NOT_FOUND);
+        //修改申请状态
+        userContactApplyService.lambdaUpdate().eq(UserContactApply::getApplyUserId, processApplyDTO.getApplyId())
+                .eq(UserContactApply::getReceiveUserId, userId)
+                .set(UserContactApply::getStatus, selection)
+                .update();
+        if (AGREE.equals(selection)) {
+            //更新我的好友列表
+            UserContact userContact = new UserContact();
+            userContact.setUserId(userId);
+            userContact.setContactId(processApplyDTO.getApplyId());
+            userContact.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
+            userContact.setCreateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
+            userContact.setContactType(FRIEND_CONTACT_TYPE);
+            userContact.setStatus(FRIEND);
+            save(userContact);
+            //更新申请人的好友列表
+            userContact.setContactId(userId);
+            userContact.setUserId(processApplyDTO.getApplyId());
+            save(userContact);
+
+            //TODO 创建会话
+        }
+
+    }
+
+    @Override
+    public List<FriendListVO> getFriendList() {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = loginUser.getUserId();
+        return userContactMapper.getFriend(userId);
+
+    }
+
+
 }

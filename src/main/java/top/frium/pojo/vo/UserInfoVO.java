@@ -18,7 +18,7 @@ public class UserInfoVO {
     private String sex;
     @ApiModelProperty(value = "添加方式,默认为1(需要同意后才能成为好友),0为直接添加不需要号主同意", required = true)
     Long addMethod;
-    @ApiModelProperty("头像地址")
+    @ApiModelProperty(value = "头像地址",required = true)
     private String avatar;
     @ApiModelProperty("个性签名,可以为空")
     private String personalSignature;

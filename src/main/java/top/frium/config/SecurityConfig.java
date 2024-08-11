@@ -27,7 +27,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/user/registerByEmail", "/user/loginByEmail",
-                                "/usr/forgetPassword","getEmailSMS").permitAll() // 允许登录和注册请求
+                                "/user/forgetPassword","/user/getEmailSMS").permitAll() // 允许登录和注册请求
                         .anyRequest().authenticated()) // 其他所有请求都需要认证
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable) // 根据需要禁用CSRF保护

@@ -4,6 +4,9 @@ package top.frium.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import top.frium.pojo.entity.UserContact;
+import top.frium.pojo.vo.FriendListVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -15,5 +18,6 @@ import top.frium.pojo.entity.UserContact;
  */
 @Mapper
 public interface UserContactMapper extends BaseMapper<UserContact> {
-
+    List<FriendListVO> getFriend(String userId);
+    void   upLoadPersonalId(String userId,String newId);
 }
