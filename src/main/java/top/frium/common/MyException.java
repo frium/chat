@@ -7,8 +7,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class MyException extends RuntimeException {
-
-
     private StatusCodeEnum statusCodeEnum;
 
     private final Integer code;

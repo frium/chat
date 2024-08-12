@@ -3,19 +3,15 @@ package top.frium.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import top.frium.common.R;
 import top.frium.pojo.dto.ForgetPasswordDTO;
 import top.frium.pojo.dto.LoginEmailDTO;
-import top.frium.pojo.dto.PersonalInfoDTO;
 import top.frium.pojo.dto.RegisterEmailDTO;
-import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.UserService;
 
 /**
@@ -58,7 +54,6 @@ public class UserController {
     @GetMapping("/logout")
     public R<?> logout() {
         userService.logout();
-
         return R.success();
     }
 

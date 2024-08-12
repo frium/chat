@@ -8,6 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum StatusCodeEnum {
     SUCCESS(200, "操作成功", 200),
+    ERROR(-1234, "系统异常", 500),
     FAIL(-1, "操作失败", 200),
     NOT_FOUND(4040, "未找到相关内容", 200),
     VALUE_ERROR(4041, "参数有误", 400),

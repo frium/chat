@@ -1,6 +1,7 @@
 package top.frium.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import top.frium.common.MyException;
 import top.frium.common.StatusCodeEnum;
 import top.frium.context.BaseContext;
+import top.frium.context.RabbitMQConstant;
 import top.frium.mapper.UserContactApplyMapper;
 import top.frium.mapper.UserContactMapper;
 import top.frium.mapper.UserMapper;
@@ -31,16 +33,17 @@ import top.frium.service.GroupInfoService;
 import top.frium.service.UserInfoService;
 import top.frium.service.UserService;
 import top.frium.uitls.EmailUtil;
+import top.frium.uitls.FtpUtils;
 import top.frium.uitls.JwtUtil;
 
 import java.time.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static top.frium.common.StatusCodeEnum.IS_HAVE;
-import static top.frium.common.StatusCodeEnum.NOT_TIME;
+import static top.frium.common.StatusCodeEnum.*;
 import static top.frium.context.CommonConstant.*;
 import static top.frium.uitls.IpUtil.getIpSource;
 
@@ -71,10 +74,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     UserContactMapper userContactMapper;
     @Autowired
     GroupInfoService groupInfoService;
+    @Autowired
+    FtpUtils ftpUtils;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+    @Value("${ecs.exposePath}")
+    String exposePath;
+
 
     @Override
     public void getEmailSMS(String email) {
-        emailUtil.sendVerificationEmail(email);
+        Long expire = redisTemplate.getExpire(email, TimeUnit.MINUTES);
+        if (expire != null && expire >= 4) throw new MyException("获取验证码过于频繁!", 426);
+        rabbitTemplate.convertAndSend(RabbitMQConstant.EMAIL_QUEUE, email);//异步发送邮箱验证码
     }
 
     @Override
@@ -177,7 +189,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void uploadAvatar(MultipartFile avatar) {
-        //TODO 修改头像
+        String uuid = String.valueOf(UUID.randomUUID());
+        String fileSuffix = Objects.requireNonNull(avatar.getOriginalFilename())
+                .substring(avatar.getOriginalFilename().lastIndexOf("."));
+        String fileName = uuid + fileSuffix;
+        try {
+            ftpUtils.sshSftp(avatar, fileName);
+        } catch (Exception e) {
+            throw new MyException(ERROR);
+        }
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        userInfoService.lambdaUpdate().eq(UserInfo::getId, loginUser.getUser().getId())
+                .set(UserInfo::getAvatar, exposePath + fileName).update();
     }
 
     @Override
