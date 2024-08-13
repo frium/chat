@@ -7,4 +7,5 @@ package top.frium.context;
  */
 public interface RabbitMQConstant {
     String EMAIL_QUEUE = "chat.email.queue";
+    String Avatar_QUEUE = "chat.avatar.queue";
 }

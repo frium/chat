@@ -30,8 +30,7 @@ public class FtpUtils {
     /**
      * 利用JSch包实现SFTP上传文件
      */
-    public void sshSftp(MultipartFile file, String fileName) throws Exception {
-        byte[] bytes = file.getBytes();
+    public void sshSftp(byte[] file, String fileName) throws Exception {
         Session session;
         Channel channel = null;
         JSch jsch = new JSch();
@@ -63,7 +62,7 @@ public class FtpUtils {
             sftp.cd(path);
             //以下代码实现从本地上传一个文件到服务器，如果要实现下载，对换以下流就可以了
             outstream = sftp.put(fileName);
-            outstream.write(bytes);
+            outstream.write(file);
         } catch (Exception e) {
             throw new Exception();
         } finally {

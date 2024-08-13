@@ -34,12 +34,12 @@ import top.frium.service.UserInfoService;
 import top.frium.service.UserService;
 import top.frium.uitls.EmailUtil;
 import top.frium.uitls.FtpUtils;
+import top.frium.uitls.ImageMQUtil;
 import top.frium.uitls.JwtUtil;
 
 import java.time.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -77,9 +77,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     FtpUtils ftpUtils;
     @Autowired
+    ImageMQUtil imageMQUtil;
+    @Autowired
     RabbitTemplate rabbitTemplate;
-    @Value("${ecs.exposePath}")
-    String exposePath;
 
 
     @Override
@@ -189,18 +189,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void uploadAvatar(MultipartFile avatar) {
-        String uuid = String.valueOf(UUID.randomUUID());
-        String fileSuffix = Objects.requireNonNull(avatar.getOriginalFilename())
-                .substring(avatar.getOriginalFilename().lastIndexOf("."));
-        String fileName = uuid + fileSuffix;
+        String fileName;
         try {
-            ftpUtils.sshSftp(avatar, fileName);
+            fileName = imageMQUtil.sendMessage(avatar);
         } catch (Exception e) {
             throw new MyException(ERROR);
         }
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         userInfoService.lambdaUpdate().eq(UserInfo::getId, loginUser.getUser().getId())
-                .set(UserInfo::getAvatar, exposePath + fileName).update();
+                .set(UserInfo::getAvatar, fileName).update();
     }
 
     @Override

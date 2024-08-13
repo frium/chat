@@ -5,6 +5,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import top.frium.common.MyException;
 import top.frium.common.StatusCodeEnum;
 import top.frium.mapper.GroupInfoMapper;
@@ -19,7 +20,9 @@ import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.GroupInfoService;
 import top.frium.service.UserContactService;
 import top.frium.service.UserInfoService;
+import top.frium.uitls.ImageMQUtil;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -33,13 +36,23 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     UserContactService userContactService;
     @Autowired
     GroupInfoMapper groupInfoMapper;
+    @Autowired
+    ImageMQUtil imageMQUtil;
+
 
     @Override
     public void createGroup(CreateGroupDTO createGroupDTO) {
         //TODO 将图片存入本地
         GroupInfo groupInfo = new GroupInfo();
         BeanUtils.copyProperties(createGroupDTO, groupInfo);
-        groupInfo.setCoverImage(DEFAULT_AVATAR);
+        MultipartFile image = createGroupDTO.getCoverImage();
+        String fileName;
+        try {
+            fileName = imageMQUtil.sendMessage(image);
+        } catch (IOException e) {
+            throw new MyException(StatusCodeEnum.ERROR);
+        }
+        groupInfo.setCoverImage(fileName);
         //设置自己为群主
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = loginUser.getUserId();
@@ -99,8 +112,8 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
                 .eq(UserContact::getContactId, groupId).count();
         //获取群主的详细信息
         UserInfo userInfo = userInfoService.lambdaQuery().eq(UserInfo::getUserId, groupInfo.getGroupOwnerId()).one();
-        UserInfoVO userInfoVO=new UserInfoVO();
-        BeanUtils.copyProperties(userInfo,userInfoVO);
+        UserInfoVO userInfoVO = new UserInfoVO();
+        BeanUtils.copyProperties(userInfo, userInfoVO);
         GroupInfoVO groupInfoVO = new GroupInfoVO();
         BeanUtils.copyProperties(groupInfo, groupInfoVO);
         groupInfoVO.setMemberNumber(memberNumber);
