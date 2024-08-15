@@ -2,6 +2,7 @@ package top.frium.service.impl;
 
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import top.frium.pojo.entity.UserContactApply;
 import top.frium.pojo.entity.UserInfo;
 import top.frium.pojo.vo.ApplyVO;
 import top.frium.pojo.vo.FriendListVO;
+import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.UserContactApplyService;
 import top.frium.service.UserContactService;
 import top.frium.service.UserInfoService;
@@ -24,7 +26,8 @@ import top.frium.service.UserInfoService;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static top.frium.common.StatusCodeEnum.ADD_MYSELF;
+import static top.frium.common.StatusCodeEnum.*;
+import static top.frium.context.CommonConstant.BE_BLACKLIST;
 import static top.frium.context.CommonConstant.*;
 
 /**
@@ -49,7 +52,7 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         if (user == null) throw new MyException(StatusCodeEnum.NOT_FOUND);
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = loginUser.getUserId();
-        if (applyAddDTO.getAddId().equals(userId)) throw new MyException(ADD_MYSELF);
+        if (applyAddDTO.getAddId().equals(userId)) throw new MyException(MYSELF);
         //查询对方是否已经添加,判断是否被拉黑
         UserContact contact = lambdaQuery().eq(UserContact::getUserId, userId).eq(UserContact::getContactId, applyAddDTO.getAddId())
                 .select(UserContact::getContactType).one();
@@ -153,6 +156,71 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         String userId = loginUser.getUserId();
         return userContactMapper.getFriend(userId);
 
+    }
+
+    @Override
+    public void deleteFriend(String contactId) {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = loginUser.getUserId();
+        //判断是否是自己
+        if (contactId.equals(userId)) throw new MyException(MYSELF);
+        //判断是否是好友
+        UserContact contact = lambdaQuery().eq(UserContact::getUserId, userId)
+                .eq(UserContact::getContactId, contactId)
+                .select(UserContact::getStatus).one();
+        if (contact == null) throw new MyException(NOT_FOUND);
+        Integer status = contact.getStatus();
+        if (DELETE.equals(status)) throw new MyException(DELETED);
+        //如果已经被删除 互删,修改状态为非好友
+        if (BE_DELETE.equals(status)) {
+            lambdaUpdate().eq(UserContact::getUserId, userId)
+                    .eq(UserContact::getContactId, contactId)
+                    .set(UserContact::getStatus, NOT_FRIEND).update();
+            lambdaUpdate().eq(UserContact::getContactId, userId)
+                    .eq(UserContact::getUserId, contactId)
+                    .set(UserContact::getStatus, NOT_FRIEND).update();
+            return;
+        }
+        //修改双方的联系人表
+        lambdaUpdate().eq(UserContact::getUserId, userId)
+                .eq(UserContact::getContactId, contactId)
+                .set(UserContact::getStatus, DELETE).update();
+        lambdaUpdate().eq(UserContact::getContactId, userId)
+                .eq(UserContact::getUserId, contactId)
+                .set(UserContact::getStatus, BE_DELETE).update();
+    }
+
+    @Override
+    public void blackoutContact(String contactId) {
+        //判断是否拉黑
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = loginUser.getUserId();
+        //判断是否是自己
+        if (contactId.equals(userId)) throw new MyException(MYSELF);
+        UserContact contact = lambdaQuery().eq(UserContact::getUserId, userId)
+                .eq(UserContact::getContactId, contactId)
+                .select(UserContact::getStatus).one();
+        if (contact == null) throw new MyException(NOT_FOUND);
+        Integer status = contact.getStatus();
+        if (BLACKLIST.equals(status)) throw new MyException(BLACKED_OUT);
+        //如果没有被拉黑
+        if (!BE_BLACKLIST.equals(status)) {
+            lambdaUpdate().eq(UserContact::getUserId, userId)
+                    .eq(UserContact::getContactId, contactId)
+                    .set(UserContact::getStatus, BLACKLIST).update();
+        }
+        lambdaUpdate().eq(UserContact::getContactId, userId)
+                .eq(UserContact::getUserId, contactId)
+                .set(UserContact::getStatus, BE_BLACKLIST).update();
+    }
+
+    @Override
+    public UserInfoVO searchUser(String searchId) {
+        UserInfo userInfo = userInfoService.lambdaQuery().eq(UserInfo::getUserId, searchId).one();
+        if (userInfo == null) throw new MyException(USER_NOT_EXIST);
+        UserInfoVO userInfoVO = new UserInfoVO();
+        BeanUtils.copyProperties(userInfo, userInfoVO);
+        return userInfoVO;
     }
 
 

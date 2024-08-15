@@ -7,7 +7,11 @@ import top.frium.pojo.dto.LoginEmailDTO;
 import top.frium.pojo.dto.PersonalInfoDTO;
 import top.frium.pojo.dto.RegisterEmailDTO;
 import top.frium.pojo.entity.User;
+import top.frium.pojo.entity.UserInfo;
+import top.frium.pojo.vo.UserAllInfoVO;
 import top.frium.pojo.vo.UserInfoVO;
+
+import java.util.List;
 
 /**
  *
@@ -34,4 +38,6 @@ public interface UserService extends IService<User> {
     void modifyPersonalId(String userId);
 
     String getLastUploadIdTime();
+
+    List<UserAllInfoVO> getUserInfo();
 }

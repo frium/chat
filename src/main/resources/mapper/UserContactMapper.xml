@@ -10,10 +10,11 @@
     </update>
 
     <select id="getFriend" resultType="top.frium.pojo.vo.FriendListVO" parameterType="java.lang.String">
-        select contact_id, nick_name, avatar
+        select user_info.user_id, contact_id, nick_name, avatar
         from user_contact
                  join user_info on user_info.user_id = contact_id
         where user_contact.user_id = #{userId}
-          and user_contact.status = 1;
+          and (user_contact.status = 1
+          or user_contact.status = 3);
     </select>
 </mapper>

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +22,10 @@ public class GlobalExceptionHandler {
     @Autowired
     private HttpServletResponse response;
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public R<?> accessDeniedExceptionHandler(AccessDeniedException e) {
+        return R.error(StatusCodeEnum.NO_PERMISSION);
+    }
 
     @ExceptionHandler(MyException.class)
     public R<?> myExceptionHandler(MyException e) {

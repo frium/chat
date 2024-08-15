@@ -12,6 +12,7 @@ import top.frium.pojo.dto.ApplyAddDTO;
 import top.frium.pojo.dto.ProcessApplyDTO;
 import top.frium.pojo.vo.ApplyVO;
 import top.frium.pojo.vo.FriendListVO;
+import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.UserContactService;
 
 import java.util.List;
@@ -32,9 +33,8 @@ public class UserContactController {
 
     @ApiOperation("搜索账号")
     @GetMapping("/search")
-    public R<?> search(@NotEmpty(message = "搜索id不能为空") String searchId) {
-        //TODO 搜索账号
-        return R.success();
+    public R<UserInfoVO> search(@NotEmpty(message = "搜索id不能为空") String searchId) {
+        return R.success(userContactService.searchUser(searchId));
     }
 
     @ApiOperation("添加好友申请")
@@ -66,6 +66,20 @@ public class UserContactController {
     @ApiOperation("获取好友列表")
     @GetMapping("/getFriendList")
     public R<List<FriendListVO>> getFriendList() {
-       return R.success(userContactService.getFriendList());
+        return R.success(userContactService.getFriendList());
+    }
+
+    @ApiOperation("删除好友")
+    @GetMapping("/deleteFriend")
+    public R<?> deleteFriend(@NotEmpty(message = "删除对象不能为空") String userId) {
+        userContactService.deleteFriend(userId);
+        return R.success();
+    }
+
+    @ApiOperation("拉黑联系人")
+    @GetMapping("/blackoutContact")
+    public R<?> blackoutContact(@NotEmpty(message = "拉黑对象不能为空") String userId) {
+        userContactService.blackoutContact(userId);
+        return R.success();
     }
 }

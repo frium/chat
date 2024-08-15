@@ -15,7 +15,8 @@ import lombok.Data;
 @Data
 @ApiModel("分页查询")
 public class PageDTO {
-    @NotEmpty
+
+
     @Min(value = 1,message = "最小从第一页展示")
     @ApiModelProperty(value = "页数",required = true)
     Integer page;

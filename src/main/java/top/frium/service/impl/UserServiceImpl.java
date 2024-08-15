@@ -28,6 +28,7 @@ import top.frium.pojo.dto.RegisterEmailDTO;
 import top.frium.pojo.entity.GroupInfo;
 import top.frium.pojo.entity.User;
 import top.frium.pojo.entity.UserInfo;
+import top.frium.pojo.vo.UserAllInfoVO;
 import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.GroupInfoService;
 import top.frium.service.UserInfoService;
@@ -38,9 +39,7 @@ import top.frium.uitls.ImageMQUtil;
 import top.frium.uitls.JwtUtil;
 
 import java.time.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static top.frium.common.StatusCodeEnum.*;
@@ -136,6 +135,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         //存token
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        if (Objects.equals(loginUser.getUser().getStatus(), FORBIDDEN_USER)) throw new MyException(USER_BE_FORBID);
         Long id = loginUser.getUser().getId();
         //修改登录时间
         userInfoService.lambdaUpdate().eq(UserInfo::getId, id)
@@ -237,5 +237,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String userId = loginUser.getUserId();
         return userInfoService.lambdaQuery().eq(UserInfo::getUserId, userId).select(UserInfo::getUserIdLastUpdateTime)
                 .one().getUserIdLastUpdateTime();
+    }
+
+    @Override
+    public List<UserAllInfoVO> getUserInfo() {
+        return userMapper.getUserAllInfo();
     }
 }

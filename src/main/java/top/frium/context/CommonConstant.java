@@ -19,6 +19,10 @@ public interface CommonConstant {
     String DEFAULT_ADD_MESSAGE = "我是%s,久仰大名,想申请为你好友";
     DateTimeFormatter DATA_TIME_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    //用户的状态
+    Integer FORBIDDEN_USER=0;
+    Integer NORMAL_USER=0;
+
     //好友添加方式
     Integer NO_APPLY = 0;
     Integer NEED_APPLY = 1;

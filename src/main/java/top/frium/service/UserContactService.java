@@ -7,6 +7,7 @@ import top.frium.pojo.dto.ProcessApplyDTO;
 import top.frium.pojo.entity.UserContact;
 import top.frium.pojo.vo.ApplyVO;
 import top.frium.pojo.vo.FriendListVO;
+import top.frium.pojo.vo.UserInfoVO;
 
 import java.util.List;
 
@@ -29,4 +30,10 @@ public interface UserContactService extends IService<UserContact> {
     void processApply(ProcessApplyDTO processApplyDTO);
 
     List<FriendListVO> getFriendList();
+
+    void deleteFriend(String userId);
+
+    void blackoutContact(String userId);
+
+    UserInfoVO searchUser(String searchId);
 }

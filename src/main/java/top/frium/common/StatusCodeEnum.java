@@ -16,10 +16,8 @@ public enum StatusCodeEnum {
     LOGIN_FAIL(1002, "登录失败,请检查账号或者密码是否有误", 200),
     NOT_LOGIN(1003, "用户未登陆", 401),
     ERROR_VERIFY(1004, "验证码错误", 200),
-    USER_NOT_EXIST(1004, "用户不存在", 200),
-    PERSONAL_ID_ERROR(1005, "身份证格式有误", 200),
-    PHONE_ERROR(1006, "手机号格式有误", 200),
-    PASSWORD_ERROR(1007, "密码格式有误", 200),
+    USER_NOT_EXIST(1005, "用户不存在", 200),
+    USER_BE_FORBID(1005, "用户被禁用", 200),
     NO_PERMISSION(1008, "无权限访问", 403),
     BE_BLACKLIST(1009, "对方以将你拉黑,无法添加好友", 200),
     IS_FRIEND(1010, "您和对方已经是好友了,无需继续添加", 200),
@@ -27,7 +25,9 @@ public enum StatusCodeEnum {
     ID_EXIST(1012, "这个账号太火热啦,已经被捷足先登了,请换一个新的吧~", 200),
     NOT_TIME(1013, "距离您上次更换个人id未满一年,请到时间后再进行更换", 200),
     IS_HAVE(1014, "这个id已经是您的了,不需要更改哦~", 200),
-    ADD_MYSELF(1015, "自己就是自己的好朋友~", 200);
+    MYSELF(1015, "自己就是自己的好朋友~", 200),
+    DELETED(1016, "您已经将对方删除了,无需继续删除", 200),
+    BLACKED_OUT(1017, "您已经将对方拉黑了,无需继续拉黑", 200);
 
 
     private final Integer code;

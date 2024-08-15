@@ -3,6 +3,7 @@ package top.frium.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import top.frium.pojo.entity.User;
+import top.frium.pojo.vo.UserAllInfoVO;
 
 import java.util.List;
 
@@ -14,5 +15,8 @@ import java.util.List;
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
     void addUserPermission(Long id);
+
     List<String> getUserPermission(Long id);
+
+    List<UserAllInfoVO> getUserAllInfo();
 }
