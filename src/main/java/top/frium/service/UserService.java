@@ -39,5 +39,7 @@ public interface UserService extends IService<User> {
 
     String getLastUploadIdTime();
 
-    List<UserAllInfoVO> getUserInfo();
+
+
+
 }

@@ -21,7 +21,7 @@ public interface CommonConstant {
 
     //用户的状态
     Integer FORBIDDEN_USER=0;
-    Integer NORMAL_USER=0;
+    Integer NORMAL_USER=1;
 
     //好友添加方式
     Integer NO_APPLY = 0;

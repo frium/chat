@@ -239,8 +239,5 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .one().getUserIdLastUpdateTime();
     }
 
-    @Override
-    public List<UserAllInfoVO> getUserInfo() {
-        return userMapper.getUserAllInfo();
-    }
+
 }

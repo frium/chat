@@ -42,7 +42,6 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
 
     @Override
     public void createGroup(CreateGroupDTO createGroupDTO) {
-        //TODO 将图片存入本地
         GroupInfo groupInfo = new GroupInfo();
         BeanUtils.copyProperties(createGroupDTO, groupInfo);
         MultipartFile image = createGroupDTO.getCoverImage();

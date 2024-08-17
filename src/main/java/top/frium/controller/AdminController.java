@@ -9,7 +9,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.frium.common.R;
 import top.frium.pojo.dto.LoginEmailDTO;
+import top.frium.pojo.entity.UserContact;
+import top.frium.pojo.entity.UserContactApply;
 import top.frium.pojo.vo.UserAllInfoVO;
+import top.frium.service.AdminService;
 import top.frium.service.UserService;
 
 import java.util.List;
@@ -26,6 +29,8 @@ import java.util.List;
 @PreAuthorize("hasAuthority('admin')")
 public class AdminController {
 
+    @Autowired
+    AdminService adminService;
     @Autowired
     UserService userService;
 
@@ -47,19 +52,28 @@ public class AdminController {
     @ApiOperation("获取用户信息")
     @PostMapping("/getUserInfo")
     public R<List<UserAllInfoVO>> getUserInfo() {
-        return R.success(userService.getUserInfo());
+        return R.success(adminService.getUserInfo());
     }
 
-    @ApiOperation("禁用用户")
-    @GetMapping("/forbidUser")
-    public R<?> forbidUser(String userId) {
+    @ApiOperation("修改用户状态")
+    @GetMapping("/updateUserStatus")
+    public R<?> forbidUser(@RequestParam String userId) {
+        adminService.updateUserStatus(userId);
         return R.success();
     }
 
-    @ApiOperation("恢复禁用用户")
-    @GetMapping("/RestoreUser")
-    public R<?> RestoreUser(String userId) {
-        return R.success();
+    @ApiOperation("查看具体用户的好友关系")
+    @GetMapping("/getUserContact")
+    public R<List<UserContact>> getUserContact(@RequestParam String usrId) {
+        return R.success(adminService.getUserContact(usrId));
     }
+
+    @ApiOperation("查看用户发送的所有好友申请")
+    @GetMapping("/getUserAllApply")
+    public R<List<UserContactApply>> getUserAllApply(@RequestParam String usrId) {
+        return R.success(adminService.getUserAllApply(usrId));
+    }
+
+
 
 }

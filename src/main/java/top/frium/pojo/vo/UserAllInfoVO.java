@@ -15,6 +15,7 @@ public class UserAllInfoVO {
     private String userId;
     private String nickName;
     private String sex;
+    private Integer status;
     private Integer addMethod;
     private String personalSignature;
     private String avatar;
