@@ -27,7 +27,10 @@ public enum StatusCodeEnum {
     IS_HAVE(1014, "这个id已经是您的了,不需要更改哦~", 200),
     MYSELF(1015, "自己就是自己的好朋友~", 200),
     DELETED(1016, "您已经将对方删除了,无需继续删除", 200),
-    BLACKED_OUT(1017, "您已经将对方拉黑了,无需继续拉黑", 200);
+    BLACKED_OUT(1017, "您已经将对方拉黑了,无需继续拉黑", 200),
+    CONTENT_TOO_LONG(1018,"发送的消息内容太长啦",200),
+    FILE_TOO_BIG(1019,"发送的文件大于10M",200),
+    NO_FRIEND(1020,"您和对方暂时还不是朋友",200);
 
 
     private final Integer code;

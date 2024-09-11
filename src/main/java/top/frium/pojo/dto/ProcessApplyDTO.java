@@ -16,9 +16,9 @@ import lombok.Data;
 @ApiModel("处理消息")
 public class ProcessApplyDTO {
 
-    @ApiModelProperty("发送请求的人的id")
+    @ApiModelProperty("发送请求的人的userId")
     @NotEmpty(message = "请求人的id不能为空")
-    private String applyId;
+    private String applyUserId;
 
     @ApiModelProperty("我的选择,-1拒绝,1同意")
     @Max(value = 1,message = "选择范围为-1~1")

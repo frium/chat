@@ -15,14 +15,10 @@ import java.io.Serializable;
  * @since 2024-08-09
  */
 @Data
-@ApiModel(value="UserContact对象", description="")
 public class UserContact implements Serializable {
     private String userId;
 
     private String contactId;
-
-    @ApiModelProperty("0好友类型 1群类型")
-    private Integer contactType;
 
     private String createTime;
 

@@ -25,8 +25,6 @@ public class UserContactApply implements Serializable {
 
     private String receiveUserId;
 
-    private Integer contactType;
-
     private String applyTime;
 
     private Integer status;

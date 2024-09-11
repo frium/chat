@@ -12,6 +12,7 @@ import top.frium.mapper.UserContactApplyMapper;
 import top.frium.mapper.UserContactMapper;
 import top.frium.pojo.LoginUser;
 import top.frium.pojo.dto.ApplyAddDTO;
+import top.frium.pojo.dto.MessageDTO;
 import top.frium.pojo.dto.ProcessApplyDTO;
 import top.frium.pojo.entity.UserContact;
 import top.frium.pojo.entity.UserContactApply;
@@ -22,6 +23,7 @@ import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.UserContactApplyService;
 import top.frium.service.UserContactService;
 import top.frium.service.UserInfoService;
+import top.frium.uitls.ChannelContextUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,6 +46,8 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
     UserContactApplyMapper userContactApplyMapper;
     @Autowired
     UserContactMapper userContactMapper;
+    @Autowired
+    ChannelContextUtil channelContextUtil;
 
     @Override
     public void applyAdd(ApplyAddDTO applyAddDTO) {
@@ -55,11 +59,11 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         if (applyAddDTO.getAddId().equals(userId)) throw new MyException(MYSELF);
         //查询对方是否已经添加,判断是否被拉黑
         UserContact contact = lambdaQuery().eq(UserContact::getUserId, userId).eq(UserContact::getContactId, applyAddDTO.getAddId())
-                .select(UserContact::getContactType).one();
+                .select(UserContact::getStatus).one();
         if (contact != null) {
-            Integer contactType = contact.getContactType();
-            if (BE_BLACKLIST.equals(contactType)) throw new MyException(StatusCodeEnum.BE_BLACKLIST);
-            if (FRIEND.equals(contactType)) throw new MyException(StatusCodeEnum.IS_FRIEND);
+            Integer status = contact.getStatus();
+            if (BE_BLACKLIST.equals(status)) throw new MyException(StatusCodeEnum.BE_BLACKLIST);
+            if (FRIEND.equals(status)) throw new MyException(StatusCodeEnum.IS_FRIEND);
         }
         //查询有没有发过申请,或发过的申请是否被处理,发过就不能再发
         boolean isApply = userContactApplyService.lambdaQuery().eq(UserContactApply::getApplyUserId, userId)
@@ -74,32 +78,29 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
             userContact.setContactId(applyAddDTO.getAddId());
             userContact.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
             userContact.setCreateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
-            userContact.setContactType(FRIEND_CONTACT_TYPE);
             userContact.setStatus(FRIEND);
             save(userContact);
             //更新申请人的好友列表
             userContact.setContactId(userId);
             userContact.setUserId((applyAddDTO.getAddId()));
             save(userContact);
-            //TODO 创建会话
-
+            channelContextUtil.sendMsg(new MessageDTO(applyAddDTO.getAddId(), "我通过了你的朋友验证请求，现在我们可以开始聊天了"));
             return;
         }
-        //设置发送请求的话术如果没有
+        //设置发送请求的话术
         String nickName = userInfoService.lambdaQuery().eq(UserInfo::getUserId, userId)
                 .select(UserInfo::getNickName).one().getNickName();
-        String applyMessage = !applyAddDTO.getApplyMessage().isEmpty() ? applyAddDTO.getApplyMessage()
-                : DEFAULT_ADD_MESSAGE.formatted(nickName);
+        String applyMessage = !applyAddDTO.getApplyMessage().isEmpty() ? applyAddDTO.getApplyMessage() : DEFAULT_ADD_MESSAGE.formatted(nickName);
         //发送请求
         UserContactApply userContactApply = new UserContactApply();
         userContactApply.setApplyUserId(userId);
         userContactApply.setReceiveUserId(user.getUserId());
-        userContactApply.setContactType(FRIEND_CONTACT_TYPE);
         userContactApply.setApplyTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
         userContactApply.setStatus(UNTREATED);
         userContactApply.setApplyInfo(applyMessage);
         userContactApplyService.save(userContactApply);
         //TODO 发送ws消息,告诉对方有好友添加消息
+        channelContextUtil.sendApply(applyAddDTO.getAddId(),applyAddDTO.getApplyMessage());
 
     }
 
@@ -122,30 +123,27 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = loginUser.getUserId();    //判断是否有请求没被处理
         Integer selection = processApplyDTO.getSelection();
-        boolean flag = userContactApplyService.lambdaQuery().eq(UserContactApply::getApplyUserId, processApplyDTO.getApplyId())
+        boolean flag = userContactApplyService.lambdaQuery().eq(UserContactApply::getApplyUserId, processApplyDTO.getApplyUserId())
                 .eq(UserContactApply::getReceiveUserId, userId).eq(UserContactApply::getStatus, UNTREATED).count() > 0;
         if (!flag || UNTREATED.equals(selection)) throw new MyException(StatusCodeEnum.NOT_FOUND);
         //修改申请状态
-        userContactApplyService.lambdaUpdate().eq(UserContactApply::getApplyUserId, processApplyDTO.getApplyId())
-                .eq(UserContactApply::getReceiveUserId, userId)
-                .set(UserContactApply::getStatus, selection)
-                .update();
+        userContactApplyService.lambdaUpdate().eq(UserContactApply::getApplyUserId, processApplyDTO.getApplyUserId())
+                .eq(UserContactApply::getReceiveUserId, userId).set(UserContactApply::getStatus, selection).update();
         if (AGREE.equals(selection)) {
             //更新我的好友列表
             UserContact userContact = new UserContact();
             userContact.setUserId(userId);
-            userContact.setContactId(processApplyDTO.getApplyId());
+            userContact.setContactId(processApplyDTO.getApplyUserId());
             userContact.setLastUpdateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
             userContact.setCreateTime(LocalDateTime.now().format(DATA_TIME_PATTERN));
-            userContact.setContactType(FRIEND_CONTACT_TYPE);
             userContact.setStatus(FRIEND);
             save(userContact);
             //更新申请人的好友列表
             userContact.setContactId(userId);
-            userContact.setUserId(processApplyDTO.getApplyId());
+            userContact.setUserId(processApplyDTO.getApplyUserId());
             save(userContact);
-
-            //TODO 创建会话
+            //申请人给本用户发送打招呼短信
+            channelContextUtil.sendMsg(new MessageDTO(processApplyDTO.getApplyUserId(), "我通过了你的朋友验证请求，现在我们可以开始聊天了"));
         }
 
     }

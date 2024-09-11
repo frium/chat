@@ -16,14 +16,14 @@ import java.util.*;
  * @description
  */
 @Component
-public class ImageMQUtil {
+public class MQUtil {
     @Autowired
     RabbitTemplate rabbitTemplate;
     @Value("${ecs.exposePath}")
     String exposePath;
 
 
-    public String sendMessage(MultipartFile file) throws IOException {
+    public String sendFileMessage(MultipartFile file) throws IOException {
         String uuid = String.valueOf(UUID.randomUUID());
         String fileSuffix = Objects.requireNonNull(file.getOriginalFilename())
                 .substring(file.getOriginalFilename().lastIndexOf("."));

@@ -8,12 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.frium.common.R;
+
 import top.frium.pojo.dto.ApplyAddDTO;
+import top.frium.pojo.dto.MessageDTO;
 import top.frium.pojo.dto.ProcessApplyDTO;
 import top.frium.pojo.vo.ApplyVO;
 import top.frium.pojo.vo.FriendListVO;
 import top.frium.pojo.vo.UserInfoVO;
+import top.frium.service.ChatMessageService;
 import top.frium.service.UserContactService;
+import top.frium.uitls.ChannelContextUtil;
 
 import java.util.List;
 
@@ -29,7 +33,11 @@ import java.util.List;
 public class UserContactController {
 
     @Autowired
+    ChatMessageService chatMessageService;
+    @Autowired
     UserContactService userContactService;
+    @Autowired
+    ChannelContextUtil channelContextUtil;
 
     @ApiOperation("搜索账号")
     @GetMapping("/search")
@@ -78,8 +86,24 @@ public class UserContactController {
 
     @ApiOperation("拉黑联系人")
     @GetMapping("/blackoutContact")
-    public R<?> blackoutContact(@NotEmpty(message = "拉黑对象不能为空") String userId) {
+    public R<?> blackoutContact(@RequestParam @NotEmpty(message = "拉黑对象不能为空") String userId) {
         userContactService.blackoutContact(userId);
         return R.success();
     }
+
+    @ApiOperation("发送短信")
+    @PostMapping("/sendMessage")
+    public R<?> sendMessage(@Valid @ModelAttribute MessageDTO messageDTO) {
+        chatMessageService.sendMessage(messageDTO);
+        return R.success();
+    }
+    @ApiOperation("消息已读")
+    @PostMapping("/readMessage")
+    public R<?> readMessage(@RequestParam @NotEmpty(message = "发送消息对象不能为空") String sendUserId) {
+        chatMessageService.readMessage(sendUserId);
+        return R.success();
+    }
+
+
+
 }

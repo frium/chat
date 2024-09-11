@@ -28,14 +28,13 @@ import top.frium.pojo.dto.RegisterEmailDTO;
 import top.frium.pojo.entity.GroupInfo;
 import top.frium.pojo.entity.User;
 import top.frium.pojo.entity.UserInfo;
-import top.frium.pojo.vo.UserAllInfoVO;
 import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.GroupInfoService;
 import top.frium.service.UserInfoService;
 import top.frium.service.UserService;
 import top.frium.uitls.EmailUtil;
 import top.frium.uitls.FtpUtils;
-import top.frium.uitls.ImageMQUtil;
+import top.frium.uitls.MQUtil;
 import top.frium.uitls.JwtUtil;
 
 import java.time.*;
@@ -76,7 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     FtpUtils ftpUtils;
     @Autowired
-    ImageMQUtil imageMQUtil;
+    MQUtil MQUtil;
     @Autowired
     RabbitTemplate rabbitTemplate;
 
@@ -191,7 +190,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void uploadAvatar(MultipartFile avatar) {
         String fileName;
         try {
-            fileName = imageMQUtil.sendMessage(avatar);
+            fileName = MQUtil.sendFileMessage(avatar);
         } catch (Exception e) {
             throw new MyException(ERROR);
         }

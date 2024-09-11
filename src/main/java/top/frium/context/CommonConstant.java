@@ -28,7 +28,6 @@ public interface CommonConstant {
     Integer NEED_APPLY = 1;
 
     //好友申请状态
-    Integer BE_REJECT = -1;
     Integer UNTREATED = 0;
     Integer AGREE = 1;
 
@@ -49,4 +48,19 @@ public interface CommonConstant {
     //联系人之间的关系
     Integer FRIEND_CONTACT_TYPE = 0;
     Integer GROUP_CONTACT_TYPE = 1;
+
+    //消息读取状态
+    Integer READ=1;
+    Integer UNREAD=0;
+
+    //发送消息类型
+    Integer NORMAL_MESSAGE=0;
+    Integer FILE=1;
+
+    //文本内容和文件内容的大小限制
+    Long MAX_FILE_SIZE = 10 * 1024 * 1024L;
+    Long MAX_MESSAGE_SIZE=1024 * 1024L;
+
+
+
 }
