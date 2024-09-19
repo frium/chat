@@ -3,6 +3,9 @@ package top.frium.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import top.frium.pojo.entity.ChatMessage;
+import top.frium.pojo.vo.ChatListVO;
+
+import java.util.List;
 
 /**
  *
@@ -11,4 +14,5 @@ import top.frium.pojo.entity.ChatMessage;
  */
 @Mapper
 public interface ChatMessageMapper extends BaseMapper<ChatMessage>{
+    List<ChatListVO>getChatList(String userId);
 }

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.frium.common.MyException;
 import top.frium.mapper.UserMapper;
+import top.frium.pojo.dto.ManagePageDTO;
 import top.frium.pojo.entity.User;
 import top.frium.pojo.entity.UserContact;
 import top.frium.pojo.entity.UserContactApply;
@@ -36,8 +37,10 @@ public class AdminServiceImpl implements AdminService {
     UserContactService userContactService;
 
     @Override
-    public List<UserAllInfoVO> getUserInfo() {
-        return userMapper.getUserAllInfo();
+    public List<UserAllInfoVO> getUserInfo(ManagePageDTO managePageDTO) {
+        Integer pageSize = managePageDTO.getPageSize();
+        int offset = (managePageDTO.getPage() - 1) * pageSize;
+        return userMapper.getUserAllInfo(offset,pageSize,managePageDTO.getEmail(),managePageDTO.getUserId());
     }
 
     @Override

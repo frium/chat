@@ -13,6 +13,7 @@ import top.frium.pojo.dto.ApplyAddDTO;
 import top.frium.pojo.dto.MessageDTO;
 import top.frium.pojo.dto.ProcessApplyDTO;
 import top.frium.pojo.vo.ApplyVO;
+import top.frium.pojo.vo.ChatListVO;
 import top.frium.pojo.vo.FriendListVO;
 import top.frium.pojo.vo.UserInfoVO;
 import top.frium.service.ChatMessageService;
@@ -104,6 +105,10 @@ public class UserContactController {
         return R.success();
     }
 
-
+    @ApiOperation("获取聊天列表")
+    @GetMapping("/getChatList")
+    public R<List<ChatListVO>> getChatList() {
+        return R.success(chatMessageService.getChatList());
+    }
 
 }

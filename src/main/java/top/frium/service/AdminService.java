@@ -1,5 +1,6 @@
 package top.frium.service;
 
+import top.frium.pojo.dto.ManagePageDTO;
 import top.frium.pojo.entity.UserContact;
 import top.frium.pojo.entity.UserContactApply;
 import top.frium.pojo.vo.UserAllInfoVO;
@@ -15,7 +16,7 @@ public interface AdminService {
     List<UserContact> getUserContact(String usrId);
 
     List<UserContactApply> getUserAllApply(String usrId);
-    List<UserAllInfoVO> getUserInfo();
+    List<UserAllInfoVO> getUserInfo(ManagePageDTO managePageDTO);
 
     void updateUserStatus(String userId);
 }

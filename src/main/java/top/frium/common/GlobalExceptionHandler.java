@@ -68,6 +68,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<?> runtimeExceptionHandler(RuntimeException e) {
+        e.printStackTrace();
         log.info("运行时异常：" + e.getMessage());
         return R.error("运行时异常" + e.getMessage());
     }

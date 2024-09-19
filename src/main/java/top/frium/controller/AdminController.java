@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.frium.common.R;
 import top.frium.pojo.dto.LoginEmailDTO;
+import top.frium.pojo.dto.ManagePageDTO;
 import top.frium.pojo.entity.UserContact;
 import top.frium.pojo.entity.UserContactApply;
 import top.frium.pojo.vo.UserAllInfoVO;
@@ -51,8 +52,8 @@ public class AdminController {
     //TODO 用es试试
     @ApiOperation("获取用户信息")
     @PostMapping("/getUserInfo")
-    public R<List<UserAllInfoVO>> getUserInfo() {
-        return R.success(adminService.getUserInfo());
+    public R<List<UserAllInfoVO>> getUserInfo(@Valid @RequestBody ManagePageDTO managePageDTO) {
+        return R.success(adminService.getUserInfo(managePageDTO));
     }
 
     @ApiOperation("修改用户状态")

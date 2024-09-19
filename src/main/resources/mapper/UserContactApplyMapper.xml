@@ -30,7 +30,7 @@
 
     <!-- 使用 resultMap -->
     <select id="loadMyApply" resultMap="ApplyVOResultMap">
-        SELECT uca.contact_type,
+        SELECT
                uca.apply_time,
                uca.status,
                uca.apply_info,
@@ -47,7 +47,7 @@
         ORDER BY uca.apply_time DESC
     </select>
     <select id="loadAddMeApply" resultMap="ApplyVOResultMap">
-        SELECT uca.contact_type,
+        SELECT
                uca.apply_time,
                uca.status,
                uca.apply_info,

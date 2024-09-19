@@ -18,5 +18,5 @@ public interface UserMapper extends BaseMapper<User> {
 
     List<String> getUserPermission(Long id);
 
-    List<UserAllInfoVO> getUserAllInfo();
+    List<UserAllInfoVO> getUserAllInfo(int offset, int pageSize,String email,String userId);
 }

@@ -22,7 +22,6 @@ import top.frium.pojo.vo.ApplyMessageVO;
 import top.frium.pojo.vo.FileMessageVO;
 import top.frium.pojo.vo.MessageVO;
 import top.frium.pojo.vo.UserInfoVO;
-import top.frium.service.ChatMessageService;
 import top.frium.service.UserInfoService;
 
 import java.time.LocalDateTime;
@@ -47,8 +46,7 @@ public class ChannelContextUtil {
     UserInfoService userInfoService;
     @Autowired
     RedisTemplate<Object, Object> redisTemplate;
-    @Autowired
-    ChatMessageService chatMessageService;
+
 
     private static final ConcurrentHashMap<String, Channel> USER_CONTEXT_MAP = new ConcurrentHashMap<>();
 
@@ -83,7 +81,7 @@ public class ChannelContextUtil {
         channel.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(applyMessageVO)));
     }
 
-    public void sendMsg(MessageDTO messageDTO) {
+    public ChatMessage sendMsg(MessageDTO messageDTO) {
         String receiveId = messageDTO.getReceiveUserId();
         if (receiveId == null) throw new MyException(StatusCodeEnum.USER_NOT_EXIST);
         ChatMessage chatMessage = new ChatMessage();
@@ -129,8 +127,7 @@ public class ChannelContextUtil {
                 throw new MyException(ERROR);
             }
         }
-        chatMessageService.save(chatMessage);
-
+        return chatMessage;
     }
 
 

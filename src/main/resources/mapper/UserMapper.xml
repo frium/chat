@@ -10,7 +10,13 @@
         where user_role.user_id = #{id}
     </select>
     <select id="getUserAllInfo" resultType="top.frium.pojo.vo.UserAllInfoVO">
-        select * from user_info join user  on user_info.id = user.id
+        select *
+        from user_info
+                 join user on user_info.id = user.id
+        where user_id like concat('%',#{userId},'%')
+          and email like concat('%', #{email},'%')
+        order by user_id
+        limit #{offset}, #{pageSize};
     </select>
     <insert id="addUserPermission">
         insert into user_role (role_id, user_id)

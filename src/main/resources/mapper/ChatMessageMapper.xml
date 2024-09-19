@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.frium.mapper.ChatMessageMapper">
+<select id="getChatList" parameterType="string">
+    SELECT ui.nick_name AS contact_nick_name,
+           ui.avatar AS contact_avtar,
+           cm.send_time AS last_send_time,
+           cm.message_type,
+           cm.receive_user_id AS contact_id,
+           cm.file_name,
+           cm.message_content AS last_message
+    FROM user_info ui
+             JOIN (
+        SELECT cm1.*
+        FROM chat_message cm1
+                 JOIN (
+            SELECT CASE
+                       WHEN send_user_id = #{userId} THEN receive_user_id
+                       ELSE send_user_id
+                       END AS contact_id,
+                   MAX(send_time) AS latest_time
+            FROM chat_message
+            WHERE send_user_id = #{userId} OR receive_user_id = #{userId}
+            GROUP BY contact_id
+        ) cm2 ON cm1.send_user_id = #{userId} AND cm1.receive_user_id = cm2.contact_id AND cm1.send_time = cm2.latest_time
+            OR cm1.receive_user_id = #{userId} AND cm1.send_user_id = cm2.contact_id AND cm1.send_time = cm2.latest_time
+    ) AS cm ON ui.user_id = cm.send_user_id OR ui.user_id = cm.receive_user_id
+             JOIN (
+        SELECT contact_id
+        FROM user_contact
+        WHERE user_id = #{userId}
+    ) AS contacts ON ui.user_id = contacts.contact_id
+    ORDER BY cm.send_time DESC;
+</select>
+</mapper>
