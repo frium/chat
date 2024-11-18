@@ -4,6 +4,9 @@ import io.swagger.annotations.ApiOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.method.HandlerMethod;
@@ -17,7 +20,6 @@ import static top.frium.uitls.IpUtil.getIpSource;
 
 
 /**
- *
  * @date 2024-06-14 17:48:43
  * @description
  */
@@ -25,7 +27,12 @@ import static top.frium.uitls.IpUtil.getIpSource;
 @Component
 @SuppressWarnings("all")
 public class IpInterceptor implements HandlerInterceptor {
-
+    @Autowired
+    RedisTemplate<Object, Object> redisTemplate;
+    @Value("${visit.uv}")
+    String HLL_KEY;
+    @Value("${visit.pv}")
+    String PV_KEY;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         if (!(handler instanceof HandlerMethod)) {
@@ -41,6 +48,8 @@ public class IpInterceptor implements HandlerInterceptor {
             ipSource = getIpSource(ipAddress);
             BaseContext.setCurrentIp(ipAddress);
             Method method = ((HandlerMethod) handler).getMethod();
+            redisTemplate.opsForHyperLogLog().add(HLL_KEY, ipAddress);
+            redisTemplate.opsForValue().increment(PV_KEY);
             if (method != null) api = method.getName();
             else log.error("method为null");
             ApiOperation annotation = method.getAnnotation(ApiOperation.class);

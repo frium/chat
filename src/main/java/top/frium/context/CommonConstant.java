@@ -31,11 +31,6 @@ public interface CommonConstant {
     Integer UNTREATED = 0;
     Integer AGREE = 1;
 
-
-    //群的状态
-    Integer GROUP_FORBIDDEN_STATUS = 0;
-    Integer GROUP_NORMAL_STATUS = 1;
-
     //好友之间的关系
     Integer NOT_FRIEND = 0;
     Integer FRIEND = 1;
@@ -43,11 +38,6 @@ public interface CommonConstant {
     Integer BE_DELETE = 3;
     Integer BLACKLIST = 4;
     Integer BE_BLACKLIST = 5;
-
-
-    //联系人之间的关系
-    Integer FRIEND_CONTACT_TYPE = 0;
-    Integer GROUP_CONTACT_TYPE = 1;
 
     //消息读取状态
     Integer READ=1;
