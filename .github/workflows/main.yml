@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ] 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ----------------------- 构建 Spring Boot 后端 -----------------------
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build Spring Boot
+        run: |
+          cd chat
+          ./mvnw clean package -DskipTests
+          mv target/*.jar chat.jar  # 统一命名 JAR 文件，方便上传
+
+
+      # ----------------------- 部署 Spring Boot 到指定目录 -----------------------
+      - name: Deploy Spring Boot to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "chat.jar"
+          target: "/home/java/chat"
+          rm: false
+
+      # ----------------------- 远程启动 Spring Boot -----------------------
+      - name: Start Spring Boot on Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/java/chat
+            chmod +x chat.jar  # 确保 JAR 可执行
+            chmod +x chat.sh
+            ./chat.sh 
