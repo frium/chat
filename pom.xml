@@ -30,7 +30,6 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -83,7 +82,7 @@
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
         </dependency>
-<!--jwt-->
+        <!--jwt-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
@@ -140,7 +139,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>org.lionsoul</groupId>
             <artifactId>ip2region</artifactId>
@@ -157,7 +155,7 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
         </dependency>
-<!--  email-->
+        <!--  email-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
@@ -177,8 +175,9 @@
             <version>4.1.97.Final</version>
         </dependency>
 
-    </dependencies>
 
+
+    </dependencies>
 
 
     <build>
