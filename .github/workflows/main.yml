@@ -21,7 +21,7 @@ jobs:
 
       - name: Build Spring Boot
         run: |
-          
+          chmod +x mvnw
           ./mvnw clean package -DskipTests
           mv target/*.jar chat.jar  # 统一命名 JAR 文件，方便上传
 
