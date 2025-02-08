@@ -77,7 +77,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     MQUtil MQUtil;
     @Autowired
-    RabbitTemplate rabbitTemplate;
+    RabbitTemplate rabbitTemplate ;
 
 
     @Override
